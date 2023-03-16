@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { ContactForm } from './ContactForm/ContactForm';
 import { ContactList } from './ContactList/ContactList';
 import { Filter } from './Filter/Filter';
@@ -11,71 +11,52 @@ const initialContacts = [
   { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
 ];
 
-export class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
+const getInitialContact = () => {
+  const contacts = localStorage.getItem('contacts');
+  const parsedContacs = JSON.parse(contacts);
+  if (contacts !== null) {
+    return parsedContacs;
+  }
 
-  deleteNumber = phoneId => {
-    this.setState(prevState => ({
+  return initialContacts;
+};
+
+export function App() {
+  const [contacts, setContacts] = useState(getInitialContact);
+  const [filter, setFilter] = useState('');
+
+  const deleteNumber = phoneId => {
+    setContacts(prevState => ({
       contacts: prevState.contacts.filter(contact => contact.id !== phoneId),
     }));
   };
 
-  addContact = newContact => {
-    this.state.contacts.find(contact => contact.name === newContact.name)
+  const addContact = newContact => {
+    contacts.find(contact => contact.name === newContact.name)
       ? alert(`${newContact.name} is already in your contacts.`)
-      : this.setState(({ contacts }) => ({
-          contacts: [newContact, ...contacts],
-        }));
+      : setContacts([newContact, ...contacts]);
   };
 
-  onFilterChange = evt => {
-    this.setState({
-      filter: evt.currentTarget.value,
-    });
+  const onFilterChange = evt => {
+    setFilter(evt.currentTarget.value);
   };
 
-  componentDidMount() {
-    const contacts = localStorage.getItem('contacts');
-    const parsedContacs = JSON.parse(contacts);
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
 
-    if (parsedContacs) {
-      this.setState({
-        contacts: parsedContacs,
-      });
+  const visibleContacts = contacts.filter(contact =>
+    contact.name.toLowerCase().includes(filter.toLowerCase())
+  );
 
-      return;
-    }
+  return (
+    <FormContainer>
+      <h1>Phonebook</h1>
+      <ContactForm onSubmit={addContact} />
 
-    this.setState({
-      contacts: initialContacts,
-    });
-  }
-
-  componentDidUpdate(prevState) {
-    if (this.state.contacts !== prevState.contacts) {
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-    }
-  }
-
-  render() {
-    const { contacts, filter } = this.state;
-
-    const visibleContacts = contacts.filter(contact =>
-      contact.name.toLowerCase().includes(filter.toLowerCase())
-    );
-
-    return (
-      <FormContainer>
-        <h1>Phonebook</h1>
-        <ContactForm onSubmit={this.addContact} />
-
-        <h2>Contacts</h2>
-        <Filter filter={filter} onChange={this.onFilterChange} />
-        <ContactList contacts={visibleContacts} onDelete={this.deleteNumber} />
-      </FormContainer>
-    );
-  }
+      <h2>Contacts</h2>
+      <Filter filter={filter} onChange={onFilterChange} />
+      <ContactList contacts={visibleContacts} onDelete={deleteNumber} />
+    </FormContainer>
+  );
 }

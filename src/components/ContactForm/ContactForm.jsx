@@ -4,20 +4,15 @@ import { nanoid } from 'nanoid';
 import PropTypes from 'prop-types';
 import { Field, Button } from './ContactForm.styled';
 
-export const ContactForm = ({ onSubmit }) => {
-  const initialValues = {
-    name: '',
-    number: '',
-  };
-
-  // const schema = object({
-  //   name: string().min(1).required(),
-  //   number: number().min(7).max(8).required(),
-  // });
+export function ContactForm({ onSubmit }) {
+  //   // const schema = object({
+  //   //   name: string().min(1).required(),
+  //   //   number: number().min(7).max(8).required(),
+  //   // });
 
   return (
     <Formik
-      initialValues={initialValues}
+      initialValues={{ name: '', number: '' }}
       // validationSchema={schema}
       onSubmit={(values, actions) => {
         onSubmit({
@@ -43,7 +38,7 @@ export const ContactForm = ({ onSubmit }) => {
       </Form>
     </Formik>
   );
-};
+}
 
 ContactForm.PropType = {
   onSubmit: PropTypes.func.isRequired,
